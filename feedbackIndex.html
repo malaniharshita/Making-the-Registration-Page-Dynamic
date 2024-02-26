@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>feedbackSystem</title>
+</head>
+<body>
+    
+    <h3 style="text-align: center;">Feedback System</h3>
+    <h4 style="margin-left: 35px;">overall rating </h4>
+    <ul style="list-style-type: none" id ="heading">
+        <li id="1">*</li>
+        <li id="2">**</li>
+        <li id="3">***</li>
+        <li id="4">****</li>
+        <li id="5">*****</li>
+    </ul>
+    <form onsubmit="addForm(event)" style="margin-left: 35px; margin-top: 70px;">
+        <label>Enter your name</label>
+        <input type = "text" id = "name" class = "name">
+        
+        <label>Choose Rating</label>
+        <select id = "cate" class="cate">
+            <option value = "1" >1</option>
+            <option value = "2" >2</option>
+            <option value = "3">3</option>
+            <option value = "4">4</option>
+            <option value = "5">5</option>
+        </select>
+        <input type = "submit" value = "Submit">
+        <h4 style="margin-top: 80px;">All Feedbacks</h4>
+        <ul id = "items">
+            
+        </ul>
+    </form>
+        <script src = "https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js">
+        </script>
+        <script>
+            
+            
+                let countOne=0;
+                let countTwo=0;
+                let countThree = 0;
+                let countFour = 0;
+                let countFive = 0;
+           
+           
+            
+            
+            
+            function addForm(event){
+                
+                event.preventDefault();
+                //console.log('1');
+                let name = event.target.name.value;
+                let rating = event.target.cate.value;
+                //console.log(rating);
+                const obj = {
+                    name : name,
+                    rating : rating
+                }
+
+                axios.post('https://crudcrud.com/api/dca20ebb543c462e8db3d82dc2742674/data',obj)
+                .then((res) => {
+                    show(res.data);
+                    //console.log(res);
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+                
+                
+                if(rating == "1"){
+                   countOne = countOne+1;
+                    
+                    document.getElementById('1').innerHTML = `* ${countOne}`;
+                }
+                if(rating == "2"){
+                    countTwo = countTwo+1;
+                    document.getElementById('2').innerHTML = `** ${countTwo}`;
+                }
+                if(rating == "3"){
+                    countThree = countThree+1;
+                    document.getElementById('3').innerHTML = `*** ${countThree}`;
+                }
+                if(rating == "4"){
+                    countFour = countFour+1;
+                    document.getElementById('4').innerHTML = `**** ${countFour}`;
+                }
+                if(rating == "5"){
+                    countFive = countFive+1;
+                    document.getElementById('5').innerHTML = `***** ${countFive}`;
+                }
+
+                
+                
+            }
+            
+            window.addEventListener("DOMContentLoaded", ()=>{
+                axios.get('https://crudcrud.com/api/dca20ebb543c462e8db3d82dc2742674/data')
+                .then((res) => {
+                for(let i = 0; i<res.data.length; i++){
+                    show(res.data[i]);
+                   
+                    //console.log(res.data[i]);
+                }
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+            })
+           
+
+            
+
+            function show(obj){
+                //console.log(obj);
+                let items = document.getElementById('items');
+                let li = document.createElement('li');
+        
+                li.id = obj._id;
+                li.appendChild(document.createTextNode(`${obj.name}`));
+                li.appendChild(document.createTextNode(` ${obj.rating}`));
+
+                let delbutton = document.createElement('button');
+                delbutton.type = 'button'
+                delbutton.appendChild(document.createTextNode("Delete"));
+
+                let editbutton = document.createElement('button');
+                editbutton.type = 'button'
+                editbutton.appendChild(document.createTextNode("Edit"));
+
+                li.appendChild(delbutton);
+                li.appendChild(editbutton);
+
+                items.appendChild(li);
+
+                delbutton.onclick= () => {
+                    deleteUser(obj._id,obj.rating);
+                }
+                editbutton.onclick = () => {
+                    editUserDetail(obj.name,obj.rating,obj._id);
+                    console.log(`${obj._id}`);
+                }
+            }
+
+            function deleteUser(userId,rating){
+                //console.log('in delete'+userId);
+                axios.delete("https://crudcrud.com/api/dca20ebb543c462e8db3d82dc2742674/data/" + userId)
+                .then((response) => {
+                    removeUserFromScreen(userId);
+                    if(rating == '1'){
+                        if(countOne>0){
+                            countOne--;
+                            document.getElementById('1').innerHTML = `* ${countOne}`;
+                        }
+                    }
+                    if(rating == "2"){
+                        countTwo--;
+                        document.getElementById('2').innerHTML = `** ${countTwo}`;
+                    }
+                    if(rating == "3"){
+                        countThree--;
+                        document.getElementById('3').innerHTML = `*** ${countThree}`;
+                    }
+                    if(rating == "4"){
+                        countFour--;
+                        document.getElementById('4').innerHTML = `**** ${countFour}`;
+                    }
+                    if(rating == "5"){
+                        countFive--;
+                        document.getElementById('5').innerHTML = `***** ${countFive}`;
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
+            }
+
+            function removeUserFromScreen(userId){
+                //console.log(userId)
+                let parentEle = document.getElementById('items');
+                let childNodeToBeDeleted = document.getElementById(userId);
+                //console.log("this is"+childNodeToBeDeleted);
+                if(childNodeToBeDeleted){
+                    parentEle.removeChild(childNodeToBeDeleted);
+                }
+            }
+
+            function editUserDetail(name,rate,id){
+                //console.log(name);
+                //console.log(rate);
+                //console.log("Id",id);
+                document.getElementById('name').value = name;
+                document.getElementById('cate').value = rate;
+                deleteUser(id,rate);
+            }
+            
+
+
+        </script>
+    
+</body>
+</html>
